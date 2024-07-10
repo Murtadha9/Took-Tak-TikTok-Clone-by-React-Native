@@ -3,52 +3,60 @@ import React from "react";
 import { Video, ResizeMode } from "expo-av";
 import Colors from "../../Uitlis/Colors";
 import { useOAuth } from "@clerk/clerk-expo";
-import * as WebBrowser from 'expo-web-browser';
-import * as Linking from 'expo-linking';
-
+import * as WebBrowser from "expo-web-browser";
+import * as Linking from "expo-linking";
+import { supabase } from "../../Uitlis/SupabaseConfig";
 
 export const useWarmUpBrowser = () => {
-    React.useEffect(() => {
-      // Warm up the android browser to improve UX
-      // https://docs.expo.dev/guides/authentication/#improving-user-experience
-      void WebBrowser.warmUpAsync();
-      return () => {
-        void WebBrowser.coolDownAsync();
-      };
-    }, []);
-  };
-  
-  WebBrowser.maybeCompleteAuthSession();
+  React.useEffect(() => {
+    // Warm up the android browser to improve UX
+    // https://docs.expo.dev/guides/authentication/#improving-user-experience
+    void WebBrowser.warmUpAsync();
+    return () => {
+      void WebBrowser.coolDownAsync();
+    };
+  }, []);
+};
 
-
-
-
+WebBrowser.maybeCompleteAuthSession();
 
 const LoginScreen = () => {
-
-
-    useWarmUpBrowser();
+  useWarmUpBrowser();
 
   const { startOAuthFlow } = useOAuth({ strategy: "oauth_google" });
 
   const onPress = React.useCallback(async () => {
     try {
       const { createdSessionId, signIn, signUp, setActive } =
-        await startOAuthFlow({ redirectUrl: Linking.createURL("/dashboard", { scheme: "tooktak" })});
+        await startOAuthFlow({
+          redirectUrl: Linking.createURL("/dashboard", { scheme: "tooktak" }),
+        });
 
       if (createdSessionId) {
         setActive({ session: createdSessionId });
+        if (signUp?.emailAddress) {
+          const { data, error } = await supabase
+            .from("Users")
+            .insert([
+              {
+                name: signUp?.firstName,
+                email: signUp?.emailAddress,
+                username: (signUp?.emailAddress).split("@")[0],
+              },
+            ])
+            .select();
+
+          if (data) {
+            console.log("User created successfully", data);
+          }
+        }
       } else {
         // Use signIn or signUp for next steps such as MFA
       }
     } catch (err) {
       console.error("OAuth error", err);
     }
-  }, []);
-
-
-
-
+  }, [startOAuthFlow]);
 
   return (
     <View style={{ flex: 1 }}>
@@ -59,7 +67,7 @@ const LoginScreen = () => {
         shouldPlay
         resizeMode="cover"
         isLooping={true}
-        style={styles.viedo}
+        style={styles.video}
       />
       <View
         style={{
@@ -88,11 +96,11 @@ const LoginScreen = () => {
             marginTop: 15,
           }}
         >
-          Find funny viedos and sharing with your friends{" "}
+          Find funny videos and share with your friends
         </Text>
 
         <TouchableOpacity
-        onPress={onPress}
+          onPress={onPress}
           style={{
             display: "flex",
             alignItems: "center",
@@ -110,7 +118,7 @@ const LoginScreen = () => {
             style={{ width: 50, height: 50 }}
             source={require("./../../../assets/images/google.png")}
           />
-          <Text style={{}}>Sign In With Google</Text>
+          <Text>Sign In With Google</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -120,7 +128,7 @@ const LoginScreen = () => {
 export default LoginScreen;
 
 const styles = StyleSheet.create({
-  viedo: {
+  video: {
     height: "100%",
     width: 1000,
     position: "absolute",

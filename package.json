@@ -10,14 +10,15 @@
   },
   "dependencies": {
     "@clerk/clerk-expo": "^1.2.5",
+    "@supabase/supabase-js": "^2.44.3",
     "expo": "~51.0.18",
     "expo-av": "~14.0.6",
+    "expo-linking": "~6.3.1",
     "expo-status-bar": "~1.12.1",
     "expo-video": "^1.2.2",
     "expo-web-browser": "~13.0.3",
     "react": "18.2.0",
-    "react-native": "0.74.3",
-    "expo-linking": "~6.3.1"
+    "react-native": "0.74.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
