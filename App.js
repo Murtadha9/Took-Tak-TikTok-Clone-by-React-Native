@@ -4,6 +4,8 @@ import LoginScreen from "./Apps/Screens/LoginScreens/LoginScreen";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-expo";
 import HomeScreen from "./Apps/Screens/Home/HomeScreen";
+import TabNavigations from "./Apps/Navigations/TabNavigations";
+import { NavigationContainer } from "@react-navigation/native";
 
 export default function App() {
   return (
@@ -12,7 +14,9 @@ export default function App() {
     >
       <View style={styles.container}>
         <SignedIn>
-          <HomeScreen/>
+          <NavigationContainer>
+            <TabNavigations />
+          </NavigationContainer>
         </SignedIn>
         <SignedOut>
           <LoginScreen />
