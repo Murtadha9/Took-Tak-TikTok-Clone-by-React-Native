@@ -14,11 +14,13 @@ import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "./../../Uitlis/FirebaseConfig";
 import Colors from "../../Uitlis/Colors";
 import { supabase } from "./../../Uitlis/SupabaseConfig";
+import { useUser } from "@clerk/clerk-expo";
 
 const PreviewScreen = () => {
   const [descr, setDescr] = useState("");
   const navigation = useNavigation();
   const params = useRoute().params;
+  const {user}=useUser()
 
   useEffect(() => {
     console.log(params);
@@ -47,7 +49,7 @@ const PreviewScreen = () => {
           videoUrl: videoUrl,
           thumbnail: params.thumbnail, // Ensure this column exists or adjust as needed
           description: descr,
-          emailRef: "user@example.com", // Replace this with actual user email or data
+          emailRef: user?.primaryEmailAddress?.emailAddress, // Replace this with actual user email or data
         },
       ]);
       if (error) {
