@@ -75,7 +75,7 @@ const HomeScreen = () => {
           onRefresh={GetLatestVideo}
           refreshing={loading}
           onEndReached={() => setLoadCount(loadCount + 7)}
-          //onEndReachedThreshold={0.2}
+      
           numColumns={2}
           renderItem={({ item, index }) => (
             <View key={index}>
