@@ -4,7 +4,7 @@ import Colors from "../../Uitlis/Colors";
 import { Ionicons } from "@expo/vector-icons";
 
 const VideoThumbnail = ({ video }) => {
-  console.log("Video data:", video); // Debugging log
+  
 
   return (
     <View style={{ flex: 1, margin: 10 }}>

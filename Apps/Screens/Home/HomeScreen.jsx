@@ -1,6 +1,7 @@
+
 import { View, Text, Image, FlatList } from "react-native";
 import React, { useEffect, useState } from "react";
-import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useUser } from "@clerk/clerk-expo";
 import { supabase } from "../../Uitlis/SupabaseConfig";
 import VideoThumbnail from "./VideoThumbnail";
 
@@ -11,8 +12,11 @@ const HomeScreen = () => {
   const [loadCount, setLoadCount] = useState(0);
 
   useEffect(() => {
-    user && updateProfileImage();
-    setLoadCount(0);
+    if (user) {
+      updateProfileImage();
+      setLoadCount(0);
+      setVideoList([]); // Reset video list on user change
+    }
   }, [user]);
 
   useEffect(() => {
@@ -20,15 +24,21 @@ const HomeScreen = () => {
   }, [loadCount]);
 
   const updateProfileImage = async () => {
-    const { data, error } = await supabase
-      .from("Users")
-      .update({
-        profileImage: user?.imageUrl,
-      })
-      .eq("email", user?.primaryEmailAddress?.emailAddress)
-      .is("profileImage", null)
-      .select();
-    //console.log(data);
+    try {
+      const { data, error } = await supabase
+        .from("Users")
+        .update({
+          profileImage: user?.imageUrl,
+        })
+        .eq("email", user?.primaryEmailAddress?.emailAddress)
+        .is("profileImage", null)
+        .select();
+
+      if (error) throw error;
+      console.log("Profile image updated:", data);
+    } catch (error) {
+      console.error("Error updating profile image:", error);
+    }
   };
 
   const GetLatestVideo = async () => {
@@ -41,12 +51,11 @@ const HomeScreen = () => {
         .order("id", { ascending: false });
 
       if (error) throw error;
-      setVideoList(videoList=>[...videoList ,...data]);
-      if (data) {
-        setLoading(false);
-      }
+      setVideoList((videoList) => [...videoList, ...data]);
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching latest videos:", error);
+      setLoading(false);
     }
   };
 
@@ -71,16 +80,14 @@ const HomeScreen = () => {
       <View>
         <FlatList
           data={videoList}
+          numColumns={2}
           style={{ display: "flex" }}
           onRefresh={GetLatestVideo}
           refreshing={loading}
           onEndReached={() => setLoadCount(loadCount + 7)}
-      
-          numColumns={2}
-          renderItem={({ item, index }) => (
-            <View key={index}>
-              <VideoThumbnail video={item} />
-            </View>
+          keyExtractor={(item, index) => index.toString()} // Add keyExtractor for unique keys
+          renderItem={({ item }) => (
+            <VideoThumbnail video={item} />
           )}
         />
       </View>
