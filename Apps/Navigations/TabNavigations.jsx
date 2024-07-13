@@ -7,6 +7,7 @@ import SearchScreen from "../Screens/Search/SearchScreen";
 import ProfileScreen from "../Screens/Profile/ProfileScreen";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../Uitlis/Colors";
+import AddScreenNavigations from "./AddScreenNavigations";
 
 const Tab = createBottomTabNavigator();
 
@@ -40,7 +41,7 @@ const TabNavigations = () => {
       />
       <Tab.Screen
         name="add"
-        component={AddScreen}
+        component={AddScreenNavigations}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (
