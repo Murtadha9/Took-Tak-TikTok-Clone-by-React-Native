@@ -8,6 +8,7 @@ import ProfileScreen from "../Screens/Profile/ProfileScreen";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../Uitlis/Colors";
 import AddScreenNavigations from "./AddScreenNavigations";
+import HomeScreenNavigations from "./HomeScreenNavigations";
 
 const Tab = createBottomTabNavigator();
 
@@ -21,7 +22,7 @@ const TabNavigations = () => {
     >
       <Tab.Screen
         name="home"
-        component={HomeScreen}
+        component={HomeScreenNavigations}
         options={{
           headerShown: false,
           tabBarIcon: ({ color, size }) => (

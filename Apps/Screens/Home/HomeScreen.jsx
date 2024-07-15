@@ -43,20 +43,19 @@ const HomeScreen = () => {
 
   const GetLatestVideo = async () => {
     setLoading(true);
-    try {
+  
       const { data, error } = await supabase
         .from("videos")
-        .select("*, Users(username, name, profileImage)")
+        .select("*, Users(username, name, profileImage),videoLikes(postIdRef,userEmial)")
         .range(loadCount, loadCount + 7)
         .order("id", { ascending: false });
 
-      if (error) throw error;
-      setVideoList((videoList) => [...videoList, ...data]);
-      setLoading(false);
-    } catch (error) {
-      console.error("Error fetching latest videos:", error);
-      setLoading(false);
-    }
+      setVideoList(videoList => [...data]);
+      console.log(error);
+      if(data){
+        setLoading(false);
+      }
+    
   };
 
   return (
@@ -85,9 +84,9 @@ const HomeScreen = () => {
           onRefresh={GetLatestVideo}
           refreshing={loading}
           onEndReached={() => setLoadCount(loadCount + 7)}
-          keyExtractor={(item, index) => index.toString()} // Add keyExtractor for unique keys
-          renderItem={({ item }) => (
-            <VideoThumbnail video={item} />
+          
+          renderItem={({ item , index }) => (
+            <VideoThumbnail video={item} key={item.id}/>
           )}
         />
       </View>
