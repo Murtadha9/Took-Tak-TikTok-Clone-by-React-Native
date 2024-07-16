@@ -81,12 +81,12 @@ const HomeScreen = () => {
           data={videoList}
           numColumns={2}
           style={{ display: "flex" }}
-          onRefresh={GetLatestVideo}
+          onRefresh={()=>GetLatestVideo()}
           refreshing={loading}
           onEndReached={() => setLoadCount(loadCount + 7)}
           
           renderItem={({ item , index }) => (
-            <VideoThumbnail video={item} key={item.id}/>
+            <VideoThumbnail video={item} key={item.id} refreshData={()=>console.log('delete')}/>
           )}
         />
       </View>
