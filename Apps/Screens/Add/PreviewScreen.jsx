@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import {
   View,
@@ -7,6 +8,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -20,47 +22,83 @@ const PreviewScreen = () => {
   const [descr, setDescr] = useState("");
   const navigation = useNavigation();
   const params = useRoute().params;
-  const {user}=useUser()
+  const { user } = useUser();
+  const [load, setLoad] = useState(false);
 
   useEffect(() => {
     console.log(params);
   }, []);
 
-  const uploadToFirebase = async (videoUri) => {
+  const uploadFileToFirebase = async (fileUri, folder) => {
     try {
-      const response = await fetch(videoUri);
+      const response = await fetch(fileUri);
       const blob = await response.blob();
-      const filename = videoUri.split("/").pop();
-      const storageRef = ref(storage, `videos/${filename}`);
+      const filename = fileUri.split("/").pop();
+      const storageRef = ref(storage, `${folder}/${filename}`);
       await uploadBytes(storageRef, blob);
       const downloadURL = await getDownloadURL(storageRef);
       return downloadURL;
     } catch (error) {
-      console.error("Error uploading video:", error);
+      console.error(`Error uploading ${folder} to Firebase:`, error);
       return null;
     }
   };
-
+  
   const PublishHandler = async () => {
-    const videoUrl = await uploadToFirebase(params.video);
-    if (videoUrl) {
-      const { data, error } = await supabase.from("videos").insert([
-        {
-          videoUrl: videoUrl,
-          thumbnail: params.thumbnail, // Ensure this column exists or adjust as needed
-          description: descr,
-          emailRef: user?.primaryEmailAddress?.emailAddress, // Replace this with actual user email or data
-        },
-      ]);
-      if (error) {
-        console.error("Error saving video URL to Supabase:", error);
-        alert(`Error saving video URL to Supabase: ${error.message}`);
+    setLoad(true); // Show loading indicator
+    try {
+      const videoUrl = await uploadFileToFirebase(params.video, "videos");
+      const thumbnailUrl = await uploadFileToFirebase(params.thumbnail, "thumbnails");
+  
+      if (videoUrl && thumbnailUrl) {
+        // Check if user exists in Users table
+        const { data: userData, error: userError } = await supabase
+          .from("Users")
+          .select("*")
+          .eq("email", user?.primaryEmailAddress?.emailAddress)
+          .single();
+  
+        if (userError) {
+          console.error("Error fetching user:", userError);
+          alert(`Error fetching user: ${userError.message}`);
+          setLoad(false);
+          return;
+        }
+  
+        if (!userData) {
+          console.error("User does not exist in Users table");
+          alert("User does not exist in Users table");
+          setLoad(false);
+          return;
+        }
+  
+        const { data, error } = await supabase.from("videos").insert([
+          {
+            videoUrl: videoUrl,
+            thumbnail: thumbnailUrl,
+            description: descr,
+            emailRef: user?.primaryEmailAddress?.emailAddress,
+          },
+        ]);
+  
+        if (error) {
+          console.error("Error saving video URL to Supabase:", error);
+          alert(`Error saving video URL to Supabase: ${error.message}`);
+        } else {
+          console.log("Video URL saved to Supabase:", data);
+          navigation.navigate("home");
+        }
       } else {
-        console.log("Video URL saved to Supabase:", data);
-        navigation.navigate("home");
+        alert("Failed to upload video or thumbnail.");
       }
+    } catch (error) {
+      console.error("Error publishing video:", error);
+      alert(`Error publishing video: ${error.message}`);
+    } finally {
+      setLoad(false); // Hide loading indicator
     }
   };
+  
 
   return (
     <KeyboardAvoidingView
@@ -110,7 +148,11 @@ const PreviewScreen = () => {
               marginTop: 20,
             }}
           >
-            <Text style={{ color: Colors.WHITE }}>Publish</Text>
+            {load ? (
+              <ActivityIndicator size="small" color={Colors.WHITE} />
+            ) : (
+              <Text style={{ color: Colors.WHITE }}>Publish</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>

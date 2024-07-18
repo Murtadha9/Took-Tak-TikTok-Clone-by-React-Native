@@ -1,8 +1,8 @@
+
 import {
   View,
   Text,
   Image,
-  TouchableHighlight,
   TouchableOpacity,
   Alert,
   ToastAndroid,
@@ -18,7 +18,7 @@ const VideoThumbnail = ({ video, refreshData }) => {
   const navigation = useNavigation();
   const { user } = useUser();
 
-  const onDeletHandler = async (video) => {
+  const onDeleteHandler = async (video) => {
     Alert.alert("DELETE VIDEO", "Are you sure you want to delete this video?", [
       {
         text: "Cancel",
@@ -40,8 +40,13 @@ const VideoThumbnail = ({ video, refreshData }) => {
 
     const { error } = await supabase.from("videos").delete().eq("id", video.id);
 
-    ToastAndroid.show("Post Deleted", ToastAndroid.SHORT)
-    refreshData()
+    if (error) {
+      console.error("Error deleting video:", error);
+      ToastAndroid.show("Error deleting post", ToastAndroid.SHORT);
+    } else {
+      ToastAndroid.show("Post Deleted", ToastAndroid.SHORT);
+      refreshData();
+    }
   };
 
   return (
@@ -53,9 +58,9 @@ const VideoThumbnail = ({ video, refreshData }) => {
       }
       style={{ flex: 1 }}
     >
-      {user.primaryEmailAddress.emailAddress == video.Users.email && (
+      {user.primaryEmailAddress.emailAddress === video.Users.email && (
         <TouchableOpacity
-          onPress={() => onDeletHandler(video)}
+          onPress={() => onDeleteHandler(video)}
           style={{ position: "absolute", zIndex: 10, right: 0, padding: 20 }}
         >
           <Ionicons name="trash" size={24} color="white" />

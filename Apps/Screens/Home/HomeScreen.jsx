@@ -1,5 +1,5 @@
 
-import { View, Text, Image, FlatList } from "react-native";
+import { View, Text, Image, FlatList, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/clerk-expo";
 import { supabase } from "../../Uitlis/SupabaseConfig";
@@ -43,19 +43,24 @@ const HomeScreen = () => {
 
   const GetLatestVideo = async () => {
     setLoading(true);
-  
+    try {
       const { data, error } = await supabase
         .from("videos")
         .select("*, Users(username, name, profileImage ,email),videoLikes(postIdRef,userEmial)")
         .range(loadCount, loadCount + 7)
         .order("id", { ascending: false });
 
-      setVideoList(videoList => [...data]);
-      console.log(error);
-      if(data){
-        setLoading(false);
+      if (error) {
+        console.error("Error fetching videos:", error);
+      } else {
+        console.log("Fetched videos:", data);
+        setVideoList(prevList => [...prevList, ...data]);
       }
-    
+    } catch (error) {
+      console.error("Error in GetLatestVideo:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -77,16 +82,27 @@ const HomeScreen = () => {
       </View>
 
       <View>
+        {loading && <ActivityIndicator size="large" color="#0000ff" />}
         <FlatList
           data={videoList}
           numColumns={2}
+          keyExtractor={(item) => item.id.toString()}
           style={{ display: "flex" }}
-          onRefresh={()=>GetLatestVideo()}
+          onRefresh={() => {
+            setVideoList([]);
+            setLoadCount(0);
+          }}
           refreshing={loading}
           onEndReached={() => setLoadCount(loadCount + 7)}
-          
-          renderItem={({ item , index }) => (
-            <VideoThumbnail video={item} key={item.id} refreshData={()=>console.log('delete')}/>
+          renderItem={({ item }) => (
+            <VideoThumbnail
+              video={item}
+              key={item.id}
+              refreshData={() => {
+                setVideoList([]);
+                setLoadCount(0);
+              }}
+            />
           )}
         />
       </View>
