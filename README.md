@@ -1,4 +1,4 @@
-#Took Tak (TikTok Clone) by Recat-Native Firebase and Supabase
+# Took Tak (TikTok Clone) by Recat-Native Firebase and Supabase
 
 # Welcome to your Expo app 👋
 
