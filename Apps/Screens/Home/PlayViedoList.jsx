@@ -35,7 +35,7 @@ const PlayViedoList = () => {
     const { data, error } = await supabase
       .from("videos")
       .select(
-        "*, Users(username, name, profileImage),videoLikes(postIdRef,userEmial)"
+        "*, Users(username, name, profileImage,email),videoLikes(postIdRef,userEmial)"
       )
       .range(0, 7)
       .order("id", { ascending: false });

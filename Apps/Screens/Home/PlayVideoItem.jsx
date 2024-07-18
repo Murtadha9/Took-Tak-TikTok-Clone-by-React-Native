@@ -11,12 +11,14 @@ import {
   import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
   import Colors from "../../Uitlis/Colors";
   import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
   
   const PlayVideoItem = ({ video, activeIndex, index, useLikeHandler, user }) => {
     const videoRef = React.useRef(null);
     const [status, setStatus] = React.useState({});
     const BottomTabHeight = useBottomTabBarHeight();
     const screenHeight = Dimensions.get("window").height - BottomTabHeight;
+    const navigation=useNavigation()
   
     const checkIsUserLike = () => {
       const result = video?.videoLikes?.find(
@@ -24,6 +26,14 @@ import {
       );
       return result;
     };
+
+
+    const onOtherUserProfilePress=(otherUser)=>{
+      navigation.navigate('other',{
+        user:otherUser
+      })
+
+    }
   
     return (
       <View>
@@ -49,10 +59,12 @@ import {
                 alignItems: "center",
               }}
             >
+              <TouchableOpacity onPress={()=>onOtherUserProfilePress(video.Users)}>
               <Image
                 source={{ uri: video?.Users.profileImage }}
                 style={{ width: 40, height: 40, borderRadius: 99 }}
               />
+              </TouchableOpacity>
               <Text style={{ color: Colors.WHITE, fontSize: 16 }}>
                 {video?.Users.name}
               </Text>
